@@ -3,18 +3,112 @@ $().ready(function(){
       srodek: function(liczba){
           return parseInt(liczba)/2;
       },
-      obszar: ['x', 'y'],
-      sprObszar: function(){
-//          func.obszar['y'] = '';
-//          func.obszar['y'].push('asdasd');
-//          func.obszar['x'] = '';
+      rand: function(min, max) {
+            var argc = arguments.length;
+                if (argc === 0) {
+                    min = 0;
+                    max = 2147483647;
+                } else if (argc === 1) {
+                    throw new Error('Funkcja wymaga podania obu argumentów min i max');
+                }
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+      },
+      wstawObszar: function(){
+          var width = 20;
+          var height = 20;
+          var left = func.rand(0, gra.scena.width-width);
+          var obszar = $('<div />')
+                          .addClass('obszar')
+                          .css('top', '0px')
+                          .css('left', left+'px')
+                          .css('width', width+'px')
+                          .css('height', height+'px')
+                          ;
+  
+             newObszar = new Array();
+             newObszar['id'] = 0;
+             newObszar['handle'] = obszar;
+             newObszar['width'] = width;
+             newObszar['height'] = height;
+             newObszar['y1'] = 0; //top1
+             newObszar['y2'] = height; //top2
+             newObszar['x1'] = left; //left1
+             newObszar['x2'] = left+width; //left2
           
-//          for(var i=0; i<func.obszar['y'].length; i++){
-//              
-//          }
-          for(x in func.obszar['y']){
-              
-          }
+          //dodanie nowego obszaru do tablicy obszarów
+          func.obszary.push(newObszar);
+          
+          //dodawanie nowego obszaru do sceny
+          gra.handle.append(obszar);
+      },
+      obiektyPociski: [],
+      obszary: new Array(),
+      //jako parametr podajemy liczbę cykli po ilu ma się pojawić nowy obszar/asteroid
+      showObszar: 5,
+      licznikCykli: 0,
+      szybkoscObszarow: 5,
+      sprObszar: function(){
+         var cykli = ++func.licznikCykli;
+         if(cykli%func.showObszar === 0){
+             func.wstawObszar();
+         }
+         
+         //porusza obiektami/asteroidami
+         for(i in func.obszary){
+             var handle = func.obszary[i];
+                handle.y1 += func.szybkoscObszarow;
+                handle.y2 += func.szybkoscObszarow;
+                if(handle.y2 >= 300){
+                    //usuwa asteroide
+                    handle.handle.remove();
+                    func.obszary.slice(i, 1);
+                }
+                handle.handle.css('top', handle.y1+'px');
+         }
+         
+         //porusza pociskami
+         for(i in gra.sterowanie.strzelanie.strzaly){
+            var handle = gra.sterowanie.strzelanie.strzaly[i];
+                handle.top -= 5;
+                if(handle.top <= 0){ 
+                    //usuwa pocisk
+                    handle.handle.remove();
+                    gra.sterowanie.strzelanie.strzaly.slice(i, 1);
+                }
+                handle.handle.css('top', handle.top);
+         }
+
+         //sprawdza czy było trafienie
+         for(i in func.obszary){
+             var handleO = func.obszary[i];
+//             console.log('aaa');
+             for(j in gra.sterowanie.strzelanie.strzaly){
+//             console.log('bbb');
+                var handleS = gra.sterowanie.strzelanie.strzaly[j];
+                    //sprawdza czy pocisk i asteroida są na tej samej wysokości
+//                    console.log(handleO.y2+' == '+handleS.top);
+                    if(handleO.y2 >= handleS.top){
+//                        console.log('jest');
+                        //sprawdza czy są na tej samej szerokości
+//                        if(handleO.x1 <= handleS.left && handleO.x2 >= handleS.left){
+//                        console.log(handleO.x1 +' <= '+ handleS.left);
+                        if( parseInt(handleO.x1) <= parseInt(handleS.left) && parseInt(handleO.x2) >= parseInt(handleS.left) ){
+                            console.log('x1: '+handleO.x1, ' x2: '+handleO.x2+' left: '+handleS.left);
+                            func.obszary.slice(i, 1);
+                            gra.sterowanie.strzelanie.strzaly.slice(j, 1);
+//                            gra.sterowanie.strzelanie.strzaly.delete(j);
+                            console.log(gra.sterowanie.strzelanie.strzaly[j]);
+//                            var arr = new Array();
+                            
+                            
+                            handleO.handle.remove();
+                            handleS.handle.remove();
+                            console.log(gra.sterowanie.strzelanie.strzaly);
+                        }
+                    }
+             }
+         }
+
       }
   });
   gra = new Object({
@@ -24,8 +118,8 @@ $().ready(function(){
           id: 'scena',
           width:300,
           height:300,
-          widthSr: 0,
-          heightSr: 0
+          widthSr: 150,
+          heightSr: 150
       },
       timer: function(){
           func.sprObszar();
@@ -62,7 +156,7 @@ $().ready(function(){
             gra.sterowanie.statek.handle = $('<div />')
                      .css('position', 'absolute')
                      .css('left', gra.scena.widthSr-5).css('width','10px').css('height', '20px').css('border', '1px solid black')
-                     .css('bottom', '30px');
+                     .css('top', '255px');
             gra.handle.html(gra.sterowanie.statek.handle);
             
             $(document).bind('keypress', function (e) {
@@ -70,6 +164,7 @@ $().ready(function(){
                 switch( (e.keyCode || e.which) ){
                     case 32:
                         //spacja
+                        console.log('strzal 2');
                         gra.sterowanie.strzelanie.strzal();
                     break;
                     case 37:
@@ -102,8 +197,56 @@ $().ready(function(){
               }
           },
           strzelanie: {
+              idOstStrzalu: 0,
+              //w tablicy strzaly liczba 0 na 
+              strzaly: [],
               strzal: function(){
-                  console.log('strzal');
+//                  console.log('strzal');
+          
+                  //tworzy na ekranie strzał
+                    //uchwyt do statku
+                  var statek = gra.sterowanie.statek.handle;
+                    //środek statku pozwala precyzyjnie umieścić pocisk
+                  var srodekStatku = func.srodek(statek.css('width'));
+                  var positionX = parseInt(statek.css('left'));
+                  var positionY = parseInt(statek.css('top'));
+                    //tworzenie obiektu - nowy pocisk
+                  var pocisk = $('<div />').addClass('pocisk')
+                                           .css('top', positionY-1+'px')
+                                           .css('left', positionX+srodekStatku)
+                                           .html('&nbsp;');
+                    //przygotowywanie handle pocisku do zapisu
+                  ++gra.sterowanie.strzelanie.idOstStrzalu;
+//                  var pociskObj = new Object({
+//                     id: gra.sterowanie.strzelanie,
+//                     handle: pocisk
+//                  });
+//                  var pociskObj = new Array(
+//                     'id' => gra.sterowanie.strzelanie,
+//                     'handle' => pocisk
+//                  );
+                  var pociskObj = new Array();
+                     pociskObj['id'] = gra.sterowanie.strzelanie;
+                     pociskObj['handle'] = pocisk;
+                     pociskObj['top'] = positionY-1;
+                     pociskObj['left'] = positionX+srodekStatku;
+                    //zapisanie handle pocisku
+//                  gra.sterowanie.strzelanie.strzaly
+                  gra.sterowanie.strzelanie.strzaly.push(pociskObj);
+                    //umieszczenie pocisku na scenie
+                  gra.handle.append(pocisk);
+//                    console.log(gra.sterowanie.strzelanie.strzaly);
+//                    console.log(gra.sterowanie.strzelanie.strzaly[0]);
+                    
+//                    console.log('----------------');
+//                    for(i in gra.sterowanie.strzelanie.strzaly){
+//                        console.log('I: '+i);
+//                        console.log(gra.sterowanie.strzelanie.strzaly[i]);
+//                    }
+                    
+//                  var handStrzaly = gra.sterowanie.strzelanie.strzaly;
+//                  var strzal = {'id':1, 'top':30, 'y':30, 'x':30}
+////                  handStrzaly.push(strzal);
               }
           }
       },

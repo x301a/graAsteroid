@@ -2,3 +2,15 @@
     border: 1px solid black;
     position:relative;
 }
+
+.pocisk {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background-color:#000;
+}
+
+.obszar {
+    position: absolute;
+    background-color: blue;
+}
