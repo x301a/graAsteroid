@@ -61,7 +61,7 @@ $().ready(function(){
                 if(handle.y2 >= 300){
                     //usuwa asteroide
                     handle.handle.remove();
-                    func.obszary.slice(i, 1);
+                    func.obszary.splice(i, 1);
                 }
                 handle.handle.css('top', handle.y1+'px');
          }
@@ -73,7 +73,7 @@ $().ready(function(){
                 if(handle.top <= 0){ 
                     //usuwa pocisk
                     handle.handle.remove();
-                    gra.sterowanie.strzelanie.strzaly.slice(i, 1);
+                    gra.sterowanie.strzelanie.strzaly.splice(i, 1);
                 }
                 handle.handle.css('top', handle.top);
          }
@@ -81,9 +81,7 @@ $().ready(function(){
          //sprawdza czy było trafienie
          for(i in func.obszary){
              var handleO = func.obszary[i];
-//             console.log('aaa');
              for(j in gra.sterowanie.strzelanie.strzaly){
-//             console.log('bbb');
                 var handleS = gra.sterowanie.strzelanie.strzaly[j];
                     //sprawdza czy pocisk i asteroida są na tej samej wysokości
 //                    console.log(handleO.y2+' == '+handleS.top);
@@ -93,17 +91,12 @@ $().ready(function(){
 //                        if(handleO.x1 <= handleS.left && handleO.x2 >= handleS.left){
 //                        console.log(handleO.x1 +' <= '+ handleS.left);
                         if( parseInt(handleO.x1) <= parseInt(handleS.left) && parseInt(handleO.x2) >= parseInt(handleS.left) ){
-                            console.log('x1: '+handleO.x1, ' x2: '+handleO.x2+' left: '+handleS.left);
-                            func.obszary.slice(i, 1);
-                            gra.sterowanie.strzelanie.strzaly.slice(j, 1);
-//                            gra.sterowanie.strzelanie.strzaly.delete(j);
-                            console.log(gra.sterowanie.strzelanie.strzaly[j]);
-//                            var arr = new Array();
-                            
+//                            console.log('x1: '+handleO.x1, ' x2: '+handleO.x2+' left: '+handleS.left);
+                            func.obszary.splice(i, 1);
+                            gra.sterowanie.strzelanie.strzaly.splice(j, 1);
                             
                             handleO.handle.remove();
                             handleS.handle.remove();
-                            console.log(gra.sterowanie.strzelanie.strzaly);
                         }
                     }
              }
